@@ -70,6 +70,19 @@ man pam_u2f
 
 Some versions support registering a credential for PIN verification with `pamu2fcfg -N` and requesting PIN verification using `pinverification=1` in the PAM module. Do not copy options blindly: confirm that your installed version supports them and test with your specific key. PIN verification is not the same as requiring a touch, and it does not necessarily mean the key's PIN will be requested on every operation unless the credential and authenticator support that behavior.
 
+## Reverse the PAM configuration
+
+To restore the PAM files, U2F mapping file, and sudoers drop-in from the backup created during setup:
+
+```bash
+chmod +x reverse-fido2-linux.sh
+sudo ./reverse-fido2-linux.sh
+```
+
+Enter the full backup directory path printed by `configure-fido2-linux.sh` and confirm with `REVERSE`. The reversal script makes a safety snapshot of the current files before restoring the backup. Keep your current administrator session open and verify password-based desktop login and `sudo` before logging out.
+
+**This reverses the local PAM/sudo configuration only.** It does not remove FIDO2 credentials from the security key and does not undo LUKS/FIDO2 boot enrollment. The configuration script in this repository does not modify LUKS in the first place.
+
 ## Testing checklist
 
 Test each component separately. Keep an existing authenticated session open throughout.

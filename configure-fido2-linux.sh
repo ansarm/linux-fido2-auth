@@ -20,7 +20,7 @@ readonly SUDOERS_DROPIN="/etc/sudoers.d/99-fido2-no-cache"
 BACKUP_DIR=""
 CHANGED_FILES=()
 
-die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+die() { printf 'ERROR: %s\n' "$*" >&2; rollback; exit 1; }
 info() { printf '\n==> %s\n' "$*"; }
 warn() { printf 'WARNING: %s\n' "$*" >&2; }
 

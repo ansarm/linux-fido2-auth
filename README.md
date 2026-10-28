@@ -20,6 +20,19 @@ The intended configuration uses a FIDO2 security key and requires PIN verificati
 - Keep password authentication available as a recovery path until every test succeeds.
 - This project does not guarantee that every key, PAM stack, display manager, initramfs, or distribution configuration behaves identically.
 
+## Usage
+
+Review the script before running it. From the repository directory:
+
+```bash
+chmod +x configure-fido2-linux.sh
+sudo ./configure-fido2-linux.sh
+```
+
+The script enrolls a PIN-verification credential using `pamu2fcfg -N`, merges it into `/etc/u2f_mappings` for the selected account, and configures the PAM rule for GNOME/GDM and `sudo`. It also sets `timestamp_timeout=0` so separate `sudo` invocations authenticate again. Keep an administrator session open and test password fallback before logging out.
+
+**The script intentionally does not configure or change LUKS/boot unlock.** If LUKS FIDO2 unlock is already working, it is left untouched. LUKS enrollment is a separate, high-risk operation and must be managed and tested independently.
+
 ## Prerequisites
 
 Before starting, make sure you have:

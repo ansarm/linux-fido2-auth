@@ -29,7 +29,9 @@ chmod +x configure-fido2-linux.sh
 sudo ./configure-fido2-linux.sh
 ```
 
-The script enrolls a PIN-verification credential using `pamu2fcfg -N`, merges it into `/etc/u2f_mappings` for the selected account, and configures the PAM rule for GNOME/GDM and `sudo`. It also sets `timestamp_timeout=0` so separate `sudo` invocations authenticate again. Keep an administrator session open and test password fallback before logging out.
+Before changing authentication files, the script checks for required packages and automatically runs `apt-get update` and installs any missing `libpam-u2f` and `sudo` packages on Debian/Ubuntu systems. This requires an internet connection and working APT repositories. Other distributions are not automatically supported; install the equivalent packages manually before running the script.
+
+The script then enrolls a PIN-verification credential using `pamu2fcfg -N`, merges it into `/etc/u2f_mappings` for the selected account, and configures the PAM rule for GNOME/GDM and `sudo`. It also sets `timestamp_timeout=0` so separate `sudo` invocations authenticate again. Keep an administrator session open and test password fallback before logging out.
 
 **The script intentionally does not configure or change LUKS/boot unlock.** If LUKS FIDO2 unlock is already working, it is left untouched. LUKS enrollment is a separate, high-risk operation and must be managed and tested independently.
 
@@ -42,14 +44,11 @@ Before starting, make sure you have:
 - Local administrator access and a working account password.
 - A current backup and a recovery path for any LUKS-encrypted data.
 - Physical access to the computer while changing authentication settings.
-- The relevant packages, where available in your distribution:
-  - `libpam-u2f`
-  - `pamu2fcfg` (often provided by the `pamu2fcfg`/PAM U2F package)
-  - `fido2-tools`
-  - `cryptsetup` and systemd tools for LUKS enrollment
-  - `sudo`
+- APT repositories and network access on Debian/Ubuntu, so the script can install missing `libpam-u2f` and `sudo` packages automatically.
+- A supported FIDO2 security key with a configured PIN.
+- For optional LUKS management outside this script, the relevant `cryptsetup` and systemd tools.
 
-Package names and tool options can differ by distribution and version. Check your installed manual pages before using any command.
+The PAM setup script does not need `fido2-tools` for its own enrollment flow. Package names and tool options can differ by distribution and version. On non-Debian/Ubuntu systems, install the equivalent PAM U2F and sudo packages manually. Check your installed manual pages before using any command.
 
 ## Before you change authentication
 

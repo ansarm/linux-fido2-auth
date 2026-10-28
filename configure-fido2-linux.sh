@@ -49,8 +49,42 @@ on_error() {
 trap on_error ERR
 
 [[ $EUID -eq 0 ]] || die "Run with sudo: sudo bash $0"
-command -v pamu2fcfg >/dev/null 2>&1 || die "pamu2fcfg not found. Install the PAM U2F package first."
-command -v visudo >/dev/null 2>&1 || die "visudo not found; install sudo."
+
+# Automatically install the required packages on Debian/Ubuntu systems.
+# Package installation happens before any PAM/configuration files are changed.
+ensure_dependencies() {
+    local missing=()
+    local package
+    local packages=(libpam-u2f sudo)
+
+    if ! command -v apt-get >/dev/null 2>&1 ||
+       ! command -v dpkg-query >/dev/null 2>&1; then
+        die "Automatic dependency installation currently supports Debian/Ubuntu (APT) only. Install libpam-u2f and sudo manually, then rerun."
+    fi
+
+    for package in "${packages[@]}"; do
+        if ! dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed'; then
+            missing+=("$package")
+        fi
+    done
+
+    if (("${#missing[@]}" > 0)); then
+        info "Installing required packages: ${missing[*]}"
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get install -y "${missing[@]}"
+        unset DEBIAN_FRONTEND
+    else
+        info "Required packages are already installed."
+    fi
+
+    command -v pamu2fcfg >/dev/null 2>&1 ||
+        die "Package installation completed, but pamu2fcfg is still unavailable. Check the libpam-u2f package for this distribution."
+    command -v visudo >/dev/null 2>&1 ||
+        die "Package installation completed, but visudo is still unavailable."
+}
+
+ensure_dependencies
 command -v install >/dev/null 2>&1 || die "install command not found."
 command -v awk >/dev/null 2>&1 || die "awk not found."
 
